@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskflow/features/home/screens/home_screen.dart';
 
 class SmartListApp extends StatelessWidget {
   const SmartListApp({super.key});
@@ -12,11 +13,7 @@ class SmartListApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.indigo,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('SmartList'),
-        ),
-      ),
+      home: const HomeScreen(),
     );
   }
 }
