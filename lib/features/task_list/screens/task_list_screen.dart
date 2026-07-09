@@ -17,7 +17,7 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> {
   final TextEditingController _taskController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void _showAddTaskDialog() {
     _taskController.clear();
@@ -60,10 +60,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
                 setState(() {
                   widget.smartList.tasks.add(
-                    Task(
-                      name: _taskController.text.trim(),
-                    ),
-                  );
+  Task(
+    name: _taskController.text.trim(),
+  ),
+);
+
+widget.smartList.tasks.sort((a, b) {
+  if (a.isDone == b.isDone) return 0;
+  return a.isDone ? 1 : -1;
+});
                 });
 
                 _taskController.clear();
@@ -81,16 +86,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-        task.name,
-      style: TextStyle(
-      decoration:
-        task.isDone ? TextDecoration.lineThrough : TextDecoration.none,
-      color: task.isDone ? Colors.grey : null,
-  ),
-),
+        title: Text(widget.smartList.name),
       ),
-
       body: widget.smartList.tasks.isEmpty
           ? const Center(
               child: Column(
@@ -127,24 +124,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   child: CheckboxListTile(
                     value: task.isDone,
                     onChanged: (value) {
-  setState(() {
-    task.isDone = value ?? false;
+                      setState(() {
+                        task.isDone = value ?? false;
 
-    widget.smartList.tasks.remove(task);
-
-    if (task.isDone) {
-      widget.smartList.tasks.add(task);
-    } else {
-      widget.smartList.tasks.insert(0, task);
-    }
-  });
-},
-                    title: Text(task.name),
+widget.smartList.tasks.sort((a, b) {
+  if (a.isDone == b.isDone) return 0;
+  return a.isDone ? 1 : -1;
+});
+                      });
+                    },
+                    title: Text(
+                      task.name,
+                      style: TextStyle(
+                        decoration: task.isDone
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        color: task.isDone ? Colors.grey : null,
+                      ),
+                    ),
                   ),
                 );
               },
             ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         child: const Icon(Icons.add),
