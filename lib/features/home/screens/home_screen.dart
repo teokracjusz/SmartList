@@ -15,6 +15,70 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<SmartList> _lists = [];
   final TextEditingController _listNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  void _showEditDialog(int index) {
+  _listNameController.text = _lists[index].name;
+
+  showDialog(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        title: const Text("Edytuj listę"),
+        content: Form(
+          key: _formKey,
+          child: TextFormField(
+            controller: _listNameController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: "Nazwa listy",
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              final name = value?.trim() ?? "";
+
+              if (name.isEmpty) {
+                return "Podaj nazwę listy";
+              }
+
+              final exists = _lists.asMap().entries.any(
+                (entry) =>
+                    entry.key != index &&
+                    entry.value.name.toLowerCase() == name.toLowerCase(),
+              );
+
+              if (exists) {
+                return "Lista o tej nazwie już istnieje";
+              }
+
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _listNameController.clear();
+              Navigator.pop(context);
+            },
+            child: const Text("Anuluj"),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (!_formKey.currentState!.validate()) return;
+
+              setState(() {
+                _lists[index].name = _listNameController.text.trim();
+              });
+
+              _listNameController.clear();
+              Navigator.pop(context);
+            },
+            child: const Text("Zapisz"),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -85,20 +149,118 @@ class _HomeScreenState extends State<HomeScreen> {
       : ListView.builder(
           itemCount: _lists.length,
           itemBuilder: (context, index) {
-            return SmartListCard(
-  smartList: _lists[index],
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TaskListScreen(
-          smartList: _lists[index],
+            return Dismissible(
+  key: ValueKey(_lists[index]),
+
+  direction: DismissDirection.horizontal,
+
+ secondaryBackground: Container(
+  alignment: Alignment.centerRight,
+  padding: const EdgeInsets.only(right: 24),
+  decoration: BoxDecoration(
+    color: Colors.red,
+    borderRadius: BorderRadius.circular(18),
+  ),
+  child: const Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        "Usuń",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
         ),
       ),
-    ).then((_) {
-      setState(() {});
-    });
+      SizedBox(width: 8),
+      Icon(Icons.delete, color: Colors.white),
+    ],
+  ),
+),
+
+  background: Container(
+  alignment: Alignment.centerLeft,
+  padding: const EdgeInsets.only(left: 24),
+  decoration: BoxDecoration(
+    color: Colors.blue,
+    borderRadius: BorderRadius.circular(18),
+  ),
+  child: const Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        Icons.edit,
+        color: Colors.white,
+        size: 30,
+      ),
+      SizedBox(width: 8),
+      Text(
+        "Edytuj",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ],
+  ),
+),
+
+  confirmDismiss: (direction) async {
+  if (direction == DismissDirection.startToEnd) {
+    _showEditDialog(index);
+    return false;
+  }
+
+  return await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Usuń listę"),
+          content: Text(
+            'Czy usunąć listę "${_lists[index].name}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Anuluj"),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Usuń"),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+
   },
+
+  onDismissed: (_) {
+    setState(() { 
+      _lists.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Lista usunięta"),
+      ),
+    );
+  },
+
+  child: SmartListCard(
+    smartList: _lists[index],
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TaskListScreen(
+            smartList: _lists[index],
+          ),
+        ),
+      ).then((_) {
+        setState(() {});
+      });
+    },
+  ),
 );
           },
         ),
@@ -162,7 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     setState(() {
-      _lists.add(SmartList(name: listName));
+      _lists.add(
+  SmartList(
+  name: listName,
+),
+);
     });
 
     _listNameController.clear();

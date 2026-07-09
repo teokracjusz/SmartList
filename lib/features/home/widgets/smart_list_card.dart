@@ -32,10 +32,9 @@ class SmartListCard extends StatelessWidget {
               Row(
                 children: [
 
-                  const Icon(
-                    Icons.list_alt,
-                    size: 28,
-                  ),
+                  const CircleAvatar(
+  child: Icon(Icons.list_alt),
+),
 
                   const SizedBox(width: 12),
 
