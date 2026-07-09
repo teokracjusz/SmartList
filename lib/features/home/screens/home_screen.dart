@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../task_list/screens/task_list_screen.dart';
 import '../../../shared/models/smart_list.dart';
+import '../widgets/smart_list_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,23 +85,21 @@ class _HomeScreenState extends State<HomeScreen> {
       : ListView.builder(
           itemCount: _lists.length,
           itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-  leading: const Icon(Icons.list_alt),
-  title: Text(_lists[index].name),
-  trailing: const Icon(Icons.chevron_right),
+            return SmartListCard(
+  smartList: _lists[index],
   onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TaskListScreen(
-      smartList: _lists[index],
-),
+        builder: (_) => TaskListScreen(
+          smartList: _lists[index],
+        ),
       ),
-    );
+    ).then((_) {
+      setState(() {});
+    });
   },
-),
-            );
+);
           },
         ),
 ),
